@@ -35,7 +35,16 @@ type AppChromeProps = {
   children: React.ReactNode;
 };
 
-const NAV_ITEMS = [
+type NavChild = {
+  label: string;
+  href: string;
+};
+
+type NavItem =
+  | { label: string; href: string }
+  | { label: string; children: NavChild[] };
+
+const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Fabric Inventory", href: "/fabric-inventory" },
   {
@@ -83,7 +92,7 @@ function getPageTitle(pathname: string) {
   for (const item of NAV_ITEMS) {
     if ("href" in item && item.href === pathname) return item.label;
     if ("children" in item) {
-      const child = item.children.find((c) => c.href === pathname);
+      const child = item.children?.find((c) => c.href === pathname);
       if (child) return child.label;
     }
   }
@@ -123,8 +132,8 @@ export function AppChrome({ children }: AppChromeProps) {
   const showAdminShell = useMemo(() => {
     return !authRoutes.includes(pathname);
   }, [authRoutes, pathname]);
-  const filteredNavItems = useMemo(() => {
-    return NAV_ITEMS.flatMap((item) => {
+  const filteredNavItems = useMemo<NavItem[]>(() => {
+    return NAV_ITEMS.flatMap<NavItem>((item) => {
       if ("children" in item) {
         const filteredChildren = filterNavChildrenByPermission(user, item.children);
         if (filteredChildren.length === 0) return [];
